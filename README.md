@@ -1,9 +1,37 @@
+# collectd-node
+
+This is a (currently demonstration) Node.js application to take data from
+collectd[1] and present a real-time graph via Websockets.
+
+## Requirements
+
+* [collectd][1]
+
+* [Node.js][3]
+
+* [Socket.IO-node][2] - git clone it into a directory at the level above this code
+
+[1]: http://collectd.org/
+[2]: https://github.com/LearnBoost/Socket.IO-node
+[3]: http://nodejs.org/
+
+## The Quick Start
+
+* Install collectd (`collectd-core` on Ubuntu)
+
+* Put `examples/collectd.conf` into /etc. This monitors load and interface
+  statistics and POSTs them to localhost:8080.
+
+	$ node ws.js
+
+* Load up http://localhost:8080/ in a modern browser (Chrome & Firefox 4 tested).
+
 ## License 
 
 (The MIT License)
 
-Copyright (c) 2011, Aaron Brady, Interactive Web Solutions Ltd.
-Copyright (c) 2011, Darren Worrall, Interactive Web Solutions Ltd.
+Copyright (c) 2011, Aaron Brady, Interactive Web Solutions Ltd.  
+Copyright (c) 2011, Darren Worrall, Interactive Web Solutions Ltd.  
 Based on work copyright (c) 2010 LearnBoost &lt;dev@learnboost.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining

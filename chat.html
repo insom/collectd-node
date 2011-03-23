@@ -7,20 +7,20 @@
     <script src="/jquery.js"></script>
     <script src="/jquery.flot.js"></script>
     <style>
-      #placeholder { width: 300px; height: 300px; }
+      #graph { width: 300px; height: 300px; }
     </style>
   </head>
   <body>
     <script>
-      ourData = [[(new Date()).getTime()/1000,0]];
+      ourData = [[(new Date()).getTime() / 1000, 0]];
 
       function message(obj){
         var messages = eval(obj);
-        for(var asd in messages) {
-        var asdf = messages[asd]
-          if(asdf['plugin'] == 'load') {
-            document.getElementById('chat').innerHTML = asdf['values'][0];
-            ourData.push([ asdf['time'],  asdf['values'][0]])
+        for(var index in messages) {
+          var ourMessage = messages[index];
+          if(ourMessage['plugin'] == 'interface' && ourMessage['type_instance'] == 'wlan0' && ourMessage['type'] == 'if_octets') {
+            document.getElementById('chat').innerHTML = ourMessage['values'][0];
+            ourData.push([ourMessage['time'], ourMessage['values'][0]]);
           }
         }
       }
@@ -41,15 +41,27 @@
       updateInterval = 100;
 
       var options = {
-        series: { shadowSize: 0 }, // drawing is faster without shadows
-        yaxis: { min: 0, max: 1 },
+        series: { shadowSize: 0 },
+        yaxis: { min: 0 },
         xaxis: { show: false }
       };
 
+      function frob(data) {
+        var results = []
+        var prev_xy = data[0];
+        for(index in data) {
+          xy = data[index];
+          new_xy = [ xy[0], (xy[1] - prev_xy[1]) / (xy[0] - prev_xy[0]) ];
+          prev_xy = xy;
+          results.push(new_xy);
+        }
+        return results;
+      }
+
       setTimeout(function() { 
-        var plot = $.plot($("#placeholder"), [ ourData ], options);
+        var plot = $.plot($("#graph"), [ ], options);
         function update() {
-          plot = $.plot($("#placeholder"), [ ourData ], options);
+          plot = $.plot($("#graph"), [ frob(ourData) ], options);
           setTimeout(update, updateInterval);
         }
         setTimeout(update, 1000);
@@ -57,6 +69,6 @@
 
     </script>
     <div id="chat"></div>
-    <div id="placeholder"></div>
+    <div id="graph"></div>
   </body>
 </html>

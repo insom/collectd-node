@@ -41,18 +41,33 @@ server.listen(8080);
 var io = io.listen(server)
   , buffer = [];
 
+var hostdata = {}
+
 var request_handler = function(request, response) {
   var buffer = '';
   request.addListener("data", function(chunk) {
     buffer += chunk;
   });
-  request.addListener("end", function() {
+/*  request.addListener("end", function() {
     response.writeHead(200, {"Content-Type": "text/plain"});
     response.write("OK");
     response.end();
     console.log(buffer.toString())
-    io.broadcast(buffer.toString())
-  });
+    //io.broadcast(buffer.toString())
+  }); */
+  request.addListener("end", function() {
+    data = eval(buffer);
+    for (var i = 0; i < data.length; i++) {
+      record = data[i];
+      hostname = record['host'];
+      plugin = record['plugin'];
+      if (hostdata[hostname] == undefined) hostdata[hostname] = {};
+      if (hostdata[hostname][plugin] == undefined) hostdata[hostname][plugin] = [];
+      hostdata[hostname][plugin].push(record['values']);
+      io.broadcast(hostdata.toString());
+      console.log(JSON.stringify(hostdata));
+    }
+  })
 }
   
 io.on('connection', function(client){

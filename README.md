@@ -3,6 +3,9 @@
 This is a (currently demonstration) Node.js application to take data from
 collectd[1] and present a real-time graph via Websockets.
 
+`chat.html` filters out which graph to display. This is hard-coded to wlan0
+until dynamically picking a plugin to monitor is implemented.
+
 ## Requirements
 
 * [collectd][1]
@@ -19,8 +22,8 @@ collectd[1] and present a real-time graph via Websockets.
 
 * Install collectd (`collectd-core` on Ubuntu)
 
-* Put `examples/collectd.conf` into /etc. This monitors load and interface
-  statistics and POSTs them to localhost:8080.
+* Put `examples/collectd.conf` into `/etc/collectd`. This monitors load and
+  interface statistics and POSTs them to localhost:8080.
 
 	$ node ws.js
 

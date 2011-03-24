@@ -48,13 +48,13 @@ var request_handler = function(request, response) {
   request.addListener("data", function(chunk) {
     buffer += chunk;
   });
-/*  request.addListener("end", function() {
+  request.addListener("end", function() {
     response.writeHead(200, {"Content-Type": "text/plain"});
     response.write("OK");
     response.end();
-    console.log(buffer.toString())
+    //console.log(buffer.toString())
     //io.broadcast(buffer.toString())
-  }); */
+  });
   request.addListener("end", function() {
     data = eval(buffer);
     for (var i = 0; i < data.length; i++) {

@@ -7,18 +7,35 @@
     <script src="/jquery.js"></script>
     <script src="/jquery.flot.js"></script>
     <style>
-      #graph { width: 300px; height: 300px; }
+      .graph { width: 300px; height: 300px; }
     </style>
   </head>
   <body>
     <script>
-      ourData = [[(new Date()).getTime() / 1000, 0]];
+      function dealWithCounter(data) {
+        var results = []
+        var prev_xy = data[0];
+        for(index in data) {
+          xy = data[index];
+          new_xy = [ xy[0], (xy[1] - prev_xy[1]) / (xy[0] - prev_xy[0]) ];
+          prev_xy = xy;
+          results.push(new_xy);
+        }
+        return results;
+      }
+
+      function dealWithGauge(data) {
+        return data;
+      }
+
+      function createGraph(filterLambda, selector, frob) {
+      var ourData = [[(new Date()).getTime() / 1000, 0]];
 
       function message(obj){
         var messages = eval(obj);
         for(var index in messages) {
           var ourMessage = messages[index];
-          if(ourMessage['plugin'] == 'interface' && ourMessage['type_instance'] == 'wlan0' && ourMessage['type'] == 'if_octets') {
+          if(filterLambda(ourMessage)) {
             document.getElementById('chat').innerHTML = ourMessage['values'][0];
             ourData.push([ourMessage['time'], ourMessage['values'][0]]);
           }
@@ -46,29 +63,28 @@
         xaxis: { show: false }
       };
 
-      function frob(data) {
-        var results = []
-        var prev_xy = data[0];
-        for(index in data) {
-          xy = data[index];
-          new_xy = [ xy[0], (xy[1] - prev_xy[1]) / (xy[0] - prev_xy[0]) ];
-          prev_xy = xy;
-          results.push(new_xy);
-        }
-        return results;
-      }
 
       setTimeout(function() { 
-        var plot = $.plot($("#graph"), [ ], options);
+        var plot = $.plot($(selector), [ ], options);
         function update() {
-          plot = $.plot($("#graph"), [ frob(ourData) ], options);
+          plot = $.plot($(selector), [ frob(ourData) ], options);
           setTimeout(update, updateInterval);
         }
         setTimeout(update, 1000);
     }, 700);
+    }
+    createGraph(
+      function(ourMessage) {
+        return (ourMessage['plugin'] == 'interface' && ourMessage['type_instance'] == 'wlan0' && ourMessage['type'] == 'if_octets');
+      }, '#graphOne', dealWithCounter);
+    createGraph(
+      function(ourMessage) {
+        return (ourMessage['plugin'] == 'load');
+      }, '#graphTwo', dealWithGauge);
 
     </script>
     <div id="chat"></div>
-    <div id="graph"></div>
+    <div id="graphOne" class="graph"></div>
+    <div id="graphTwo" class="graph"></div>
   </body>
 </html>

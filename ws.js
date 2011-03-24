@@ -62,8 +62,12 @@ var request_handler = function(request, response) {
       hostname = record['host'];
       plugin = record['plugin'];
       if (hostdata[hostname] == undefined) hostdata[hostname] = {};
-      if (hostdata[hostname][plugin] == undefined) hostdata[hostname][plugin] = [];
-      hostdata[hostname][plugin].push(record['values']);
+      hostdata[hostname][plugin] = [];
+      for ( var x = 0; x < record['values'].length; x++) {
+        dsname = record['dsnames'][x];
+        dstype = record['dstypes'][x];
+	hostdata[hostname][plugin].push([dsname, dstype]);
+      }
       io.broadcast(hostdata.toString());
       console.log(JSON.stringify(hostdata));
     }

@@ -53,7 +53,7 @@ var request_handler = function(request, response) {
     response.write("OK");
     response.end();
     //console.log(buffer.toString())
-    //io.broadcast(buffer.toString())
+    io.broadcast(buffer.toString())
   });
   request.addListener("end", function() {
     data = eval(buffer);
@@ -69,7 +69,7 @@ var request_handler = function(request, response) {
 	hostdata[hostname][plugin].push([dsname, dstype]);
       }
       io.broadcast(hostdata.toString());
-      console.log(JSON.stringify(hostdata));
+      //console.log(JSON.stringify(hostdata));
     }
   })
 }

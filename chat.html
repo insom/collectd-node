@@ -1,108 +1,74 @@
 <!doctype html>
 <html>
   <head>
-    <title>socket.io client test</title>
-        
+    <title>collectd-node</title>
     <script src="/json.js"></script> <!-- for ie -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="/jquery.js"></script>
     <script src="/jquery.flot.js"></script>
+    <style>
+      #graph { width: 300px; height: 300px; }
+    </style>
   </head>
   <body>
-    
     <script>
-ourData = [[(new Date()).getTime()/1000,0]];
+      ourData = [[(new Date()).getTime() / 1000, 0]];
+
       function message(obj){
-      /*
-        var bits = obj.split(/ /);
-        var id = bits[0]
-        var element = document.getElementById(bits[0]);
-        if(!element) { 
-            element = document.createElement('p');
-            element.id = id;
-            var chat = document.getElementById('chat');
-            chat.appendChild(element);
-        }
-        element.innerHTML = esc(bits[0]) + ':' + esc(bits[1]);
-        
-        */
         var messages = eval(obj);
-        for(var asd in messages) {
-        var asdf = messages[asd]
-            if(asdf['plugin'] == 'load') {
-                document.getElementById('chat').innerHTML = asdf['values'][0];
-ourData.push([ asdf['time'],  asdf['values'][0]])
-                document.getElementById('chat').scrollTop = 1000000;
-            }
+        for(var index in messages) {
+          var ourMessage = messages[index];
+          if(ourMessage['plugin'] == 'interface' && ourMessage['type_instance'] == 'wlan0' && ourMessage['type'] == 'if_octets') {
+            document.getElementById('chat').innerHTML = ourMessage['values'][0];
+            ourData.push([ourMessage['time'], ourMessage['values'][0]]);
+          }
         }
       }
-      
+
       function send(){
         var val = document.getElementById('text').value;
         socket.send(val);
         message({ message: ['you', val] });
         document.getElementById('text').value = '';
       }
-      
-      function esc(msg){
-        return msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      };
-      
+
       var socket = new io.Socket(null, {port: 8080, rememberTransport: false});
       socket.connect();
       socket.on('message', function(obj){
         message(obj);
       });
       
- //     socket.on('connect', function(){ message({ message: ['System', 'Connected']})});
-//      socket.on('disconnect', function(){ message({ message: ['System', 'Disconnected']})});
-//      socket.on('reconnect', function(){ message({ message: ['System', 'Reconnected to server']})});
-//      socket.on('reconnecting', function( nextRetry ){ message({ message: ['System', 'Attempting to re-connect to the server, next attempt in ' + nextRetry + 'ms']})});
-//      socket.on('reconnect_failed', function(){ message({ message: ['System', 'Reconnected to server FAILED.']})});
+      updateInterval = 100;
 
-updateInterval = 100;
-
-  // setup plot
-    var options = {
-        series: { shadowSize: 0 }, // drawing is faster without shadows
-        yaxis: { min: 0, max: 1 },
+      var options = {
+        series: { shadowSize: 0 },
+        yaxis: { min: 0 },
         xaxis: { show: false }
-    };
+      };
 
-setTimeout(function() { 
-    var plot = $.plot($("#placeholder"), [ ourData ], options);
-    function update() {
-plot = $.plot($("#placeholder"), [ ourData ], options);
- //      plot.setData([ ourData ]);
-        // since the axes don't change, we don't need to call plot.setupGrid()
-  //      plot.draw();
-        
-        setTimeout(update, updateInterval);
-    }
-    setTimeout(update, 1000);
-}, 700);
+      function frob(data) {
+        var results = []
+        var prev_xy = data[0];
+        for(index in data) {
+          xy = data[index];
+          new_xy = [ xy[0], (xy[1] - prev_xy[1]) / (xy[0] - prev_xy[0]) ];
+          prev_xy = xy;
+          results.push(new_xy);
+        }
+        return results;
+      }
 
+      setTimeout(function() { 
+        var plot = $.plot($("#graph"), [ ], options);
+        function update() {
+          plot = $.plot($("#graph"), [ frob(ourData) ], options);
+          setTimeout(update, updateInterval);
+        }
+        setTimeout(update, 1000);
+    }, 700);
 
     </script>
-    
-    <h1>Sample chat client</h1>
     <div id="chat"></div>
-<div id="placeholder"></div>
-    <form id="form" onSubmit="send(); return false">
-      <input type="text" autocomplete="off" id="text"><input type="submit" value="Send">
-    </form>
-    
-    <style>
-      #chat {  width: 800px; border: 1px solid #eee; font: 13px Helvetica, Arial; }
-      #chat p { padding: 8px; margin: 0; }
-      #chat p:nth-child(odd) { background: #F6F6F6; }
-      #form { width: 782px; background: #333; padding: 5px 10px; display: none; }
-      #form input[type=text] { width: 700px; padding: 5px; background: #fff; border: 1px solid #fff; }
-      #form input[type=submit] { cursor: pointer; background: #999; border: none; padding: 6px 8px; -moz-border-radius: 8px; -webkit-border-radius: 8px; margin-left: 5px; text-shadow: 0 1px 0 #fff; }
-      #form input[type=submit]:hover { background: #A2A2A2; }
-      #form input[type=submit]:active { position: relative; top: 2px; }
-#placeholder { width: 300px; height: 300px; }
-    </style>
-    
+    <div id="graph"></div>
   </body>
 </html>
